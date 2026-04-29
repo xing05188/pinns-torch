@@ -74,7 +74,7 @@ net:
 
 trainer:
   accelerator: gpu
-  max_epochs: 60000
+  max_epochs: 100
   devices: [0]
   deterministic: false
   check_val_every_n_epoch: 60001
