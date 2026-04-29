@@ -161,8 +161,8 @@ checkpoints
 /checkpoints/
 Untitled.ipynb
 /Untitled.ipynb
-outputs
-/outputs/
+# outputs
+# /outputs/
 
 misc
 /misc

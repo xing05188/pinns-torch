@@ -2,12 +2,12 @@ defaults:
   - train
   - _self_
 
-N0: 50
+N0: 0
 N_b: 50
 N_f: 10000
 
 # config.yaml 新增一行
-use_pde: false   # 实验 C 时改为 false
+use_pde: true   # 实验 C 时改为 false
 # 噪声
 noise_level: 0.0
 
@@ -33,12 +33,12 @@ train_datasets:
       num_sample: ${N_f}
       collection_points:
         - f
-  - initial_condition:
-      _target_: pinnstorch.data.InitialCondition
-      _partial_: true
-      num_sample: ${N0}
-      solution:
-        - u
+  # - initial_condition:
+  #     _target_: pinnstorch.data.InitialCondition
+  #     _partial_: true
+  #     num_sample: ${N0}
+  #     solution:
+  #       - u
   - dirichlet_boundary_condition:
       _target_: pinnstorch.data.DirichletBoundaryCondition
       _partial_: true
