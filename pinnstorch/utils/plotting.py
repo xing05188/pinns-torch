@@ -71,6 +71,86 @@ def savefig(filename, crop=True):
     log.info(f"Image saved at {filename}")
 
 
+def save_interactive_html(filename, mesh, exact_u, pred_u):
+    """Save an interactive 3D HTML surface plot for Burgers results.
+
+    The HTML output can be opened in a browser and supports rotate, zoom, and pan.
+    """
+
+    try:
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+    except ImportError:
+        log.warning("Plotly is not installed; skipping interactive HTML export.")
+        return
+
+    dir_name = os.path.dirname(filename)
+    if dir_name and not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+    time_grid = np.asarray(mesh.time_domain[:]).reshape(-1)
+    space_grid = np.asarray(mesh.spatial_domain[:]).reshape(-1)
+    t_mesh, x_mesh = np.meshgrid(time_grid, space_grid)
+    abs_error = np.abs(pred_u - exact_u)
+
+    fig = make_subplots(
+        rows=1,
+        cols=3,
+        horizontal_spacing=0.03,
+        specs=[[{"type": "surface"}, {"type": "surface"}, {"type": "surface"}]],
+        subplot_titles=("Exact u(t, x)", "Predicted u(t, x)", "Absolute error"),
+    )
+
+    fig.add_trace(
+        go.Surface(
+            x=t_mesh,
+            y=x_mesh,
+            z=exact_u,
+            colorscale="Viridis",
+            name="Exact",
+            showscale=True,
+        ),
+        row=1,
+        col=1,
+    )
+    fig.add_trace(
+        go.Surface(
+            x=t_mesh,
+            y=x_mesh,
+            z=pred_u,
+            colorscale="RdBu",
+            name="Prediction",
+            showscale=True,
+        ),
+        row=1,
+        col=2,
+    )
+    fig.add_trace(
+        go.Surface(
+            x=t_mesh,
+            y=x_mesh,
+            z=abs_error,
+            colorscale="Hot",
+            name="Absolute error",
+            showscale=True,
+        ),
+        row=1,
+        col=3,
+    )
+
+    fig.update_layout(
+        title="Burgers continuous forward: interactive 3D surfaces",
+        height=720,
+        margin=dict(l=0, r=0, t=60, b=0),
+        scene=dict(xaxis_title="t", yaxis_title="x", zaxis_title="u"),
+        scene2=dict(xaxis_title="t", yaxis_title="x", zaxis_title="u"),
+        scene3=dict(xaxis_title="t", yaxis_title="x", zaxis_title="|error|"),
+    )
+
+    fig.write_html(f"{filename}.html", include_plotlyjs="inline", full_html=True)
+    log.info(f"Interactive HTML saved at {filename}.html")
+
+
 def plot_navier_stokes(mesh, preds, train_datasets, val_dataset, file_name):
     """Plot Navier-Stokes continuous inverse PDE."""
 
@@ -510,6 +590,21 @@ def plot_schrodinger(mesh, preds, train_datasets, val_dataset, file_name):
     ax.set_title("$t = %.2f$" % (mesh.time_domain[125]), fontsize=10)
 
     savefig(file_name + "/fig")
+    
+    # 转换为标量（求模长）后供 HTML 使用
+    try:
+        exact_h_mag = np.abs(Exact_h)
+        pred_h_mag = np.abs(H_pred)
+        # 兼容一下 schrodinger 的空间网格对象获取
+        class SchrodingerMeshAdapter:
+            def __init__(self, t_dom, x_mesh):
+                self.time_domain = t_dom
+                self.spatial_domain = x_mesh[:, 0, 0] # 获取一维 x 坐标
+
+        adapter = SchrodingerMeshAdapter(mesh.time_domain, mesh.spatial_domain_mesh)
+        save_interactive_html(file_name + "/fig_interactive", adapter, exact_h_mag, pred_h_mag)
+    except Exception as e:
+        log.warning(f"无法生成 Schrodinger 3D HTML: {e}")
 
 
 def plot_burgers_continuous_forward(mesh, preds, train_datasets, val_dataset, file_name):
@@ -607,6 +702,7 @@ def plot_burgers_continuous_forward(mesh, preds, train_datasets, val_dataset, fi
     ax.set_title("$t = 0.75$", fontsize=10)
 
     savefig(file_name + "/fig")
+    save_interactive_html(file_name + "/fig_interactive", mesh, exact_u, U_pred)
 
 
 def plot_burgers_continuous_inverse(mesh, preds, train_datasets, val_dataset, file_name):
@@ -701,3 +797,4 @@ def plot_burgers_continuous_inverse(mesh, preds, train_datasets, val_dataset, fi
     ax.set_title("$t = 0.75$", fontsize=10)
 
     savefig(file_name + "/fig")
+    save_interactive_html(file_name + "/fig_interactive", mesh, exact_u, U_pred)
