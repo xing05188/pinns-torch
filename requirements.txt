@@ -26,3 +26,4 @@ pytest          # tests
 pyDOE
 scipy
 matplotlib
+plotly
