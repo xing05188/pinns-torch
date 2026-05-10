@@ -1,0 +1,20 @@
+defaults:
+  - config
+
+q: 100
+
+runge_kutta:
+  _target_: pinnstorch.models.RungeKutta
+  root_dir: ${paths.rk_dir}
+  q: ${q}
+  t1: ${idx_t0}
+  t2: ${idx_t1}
+  time_domain: ${time_domain}
+
+net:
+  _target_: pinnstorch.models.FCN
+  _partial_: true
+  layers: [1, 50, 50, 50, 101]
+  output_names:
+    - u
+  discrete: true

@@ -33,12 +33,12 @@ train_datasets:
       num_sample: ${N_f}
       collection_points:
         - f
-  # - initial_condition:
-  #     _target_: pinnstorch.data.InitialCondition
-  #     _partial_: true
-  #     num_sample: ${N0}
-  #     solution:
-  #       - u
+  - initial_condition:
+      _target_: pinnstorch.data.InitialCondition
+      _partial_: true
+      num_sample: ${N0}
+      solution:
+        - u
   - dirichlet_boundary_condition:
       _target_: pinnstorch.data.DirichletBoundaryCondition
       _partial_: true

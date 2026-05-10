@@ -2,7 +2,13 @@ from typing import Callable, List, Union
 
 import numpy as np
 import torch
-from pyDOE import lhs
+try:
+    from pyDOE import lhs
+except Exception:
+    try:
+        from pydoe import lhs
+    except Exception:
+        raise
 
 from pinnstorch.data import Interval, Rectangle, RectangularPrism, TimeDomain
 
